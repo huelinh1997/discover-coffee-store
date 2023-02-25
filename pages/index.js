@@ -1,8 +1,46 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import React, { useEffect, useState, useContext } from "react";
+import Head from "next/head";
+import Image from "next/image";
 
-export default function Home() {
+import Banner from "../components/Banner";
+import Card from "../components/Card";
+import styles from "../styles/Home.module.scss";
+import coffeeStoresData from "./data/coffee-store.json";
+import { getListCoffee } from "../service/coffee-store";
+import useTrackLocation from "../hooks/use-track-location";
+import { StoreContext, ACTION_TYPES } from "../store/store-context";
+
+export default function Home({ coffeeStores }) {
+  // const [storesNearMe, setStoreNearMe] = useState([]);
+  const { handleTrackLocation, errLocationMsg, isFindingLocation } =
+    useTrackLocation();
+  const { dispatch, state } = useContext(StoreContext);
+  const { coffeeStores: coffeeStoresNearMe, latLong } = state;
+  const onClickViewStoreNearBy = () => {
+    handleTrackLocation();
+  };
+  const getListCoffeeNearMe = async (latLong) => {
+    try {
+      const res = await fetch(
+        `/api/coffee-store/near-me?latLong=${latLong}&limit=${30}`
+      );
+      const listCoffeeNearMe = await res.json();
+      // setStoreNearMe(listCoffeeNearMe);
+      dispatch({
+        type: ACTION_TYPES.SET_COFFEE_STORES,
+        payload: {
+          coffeeStores: listCoffeeNearMe,
+        },
+      });
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    if (latLong) {
+      getListCoffeeNearMe(latLong);
+    }
+  }, [latLong]);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -12,58 +50,82 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        <Banner
+          handleOnClick={onClickViewStoreNearBy}
+          buttonText={
+            isFindingLocation ? "isLoading..." : "View stores near by"
+          }
+        />
+        {errLocationMsg && <p>Something wrong: {errLocationMsg}</p>}
+        <div className={styles.sectionWrapper}>
+          <div className={styles.heroImage}>
+            <Image
+              src="/asset/images/hero-image.png"
+              width="700"
+              height="400"
+              alt="banner"
+            />
+          </div>
+          {coffeeStoresNearMe.length > 0 && (
+            <>
+              <h2 className={styles.heading2}>Stores near me:</h2>
+              <div className={styles.cardLayout}>
+                {coffeeStoresNearMe.map((coffeeStore) => {
+                  return (
+                    <Card
+                      key={coffeeStore.id}
+                      title={coffeeStore.name}
+                      imageUrl={
+                        coffeeStore.imgUrl || "/asset/images/image-default.jpeg"
+                      }
+                      link={`/coffee-store/${coffeeStore.id}`}
+                      className={styles.card}
+                    />
+                  );
+                })}
+              </div>
+            </>
+          )}
+          {coffeeStores.length && (
+            <>
+              <h2 className={styles.heading2}>Toronto stores:</h2>
+              <div className={styles.cardLayout}>
+                {coffeeStores.map((coffeeStore) => {
+                  return (
+                    <Card
+                      key={coffeeStore.id}
+                      title={coffeeStore.name}
+                      imageUrl={
+                        coffeeStore.imgUrl || "/asset/images/image-default.jpeg"
+                      }
+                      link={`/coffee-store/${coffeeStore.id}`}
+                      className={styles.card}
+                    />
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
     </div>
-  )
+  );
+}
+
+export async function getStaticProps() {
+  // Call an external API endpoint to get posts.
+  // You can use any data fetching library
+  // const res = await fetch("https://.../posts");
+  // const posts = await res.json();
+
+  // By returning { props: { posts } }, the Blog component
+  // will receive `posts` as a prop at build time
+
+  const coffeeStores = await getListCoffee();
+
+  return {
+    props: {
+      coffeeStores,
+    },
+  };
 }

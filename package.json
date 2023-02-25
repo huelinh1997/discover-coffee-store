@@ -3,15 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -- -p 3005",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "12.2.4",
-    "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "airtable": "^0.11.6",
+    "classnames": "^2.3.2",
+    "next": "12",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sass": "^1.57.1",
+    "swr": "^2.0.4",
+    "unsplash-js": "^7.0.15"
   },
   "devDependencies": {
     "eslint": "8.21.0",
