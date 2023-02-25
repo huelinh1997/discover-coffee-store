@@ -1,7 +1,7 @@
 var Airtable = require("airtable");
 var base = new Airtable({
-  apiKey: "keyCrzTlXewxrQDSD",
-}).base("appqCrD4n9xtbY4Ql");
+  apiKey: process.env.AIR_TABLE_API_KEY,
+}).base(process.env.AIR_TABLE_BASE_CODE);
 const tableName = "coffee-stores";
 const table = base(tableName);
 
