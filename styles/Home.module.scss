@@ -18,6 +18,10 @@
   top: 40px;
   right: -90px;
   z-index: 1;
+
+  .image {
+    object-fit: contain;
+  }
 }
 
 .cardLayout {

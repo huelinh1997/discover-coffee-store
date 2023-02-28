@@ -64,6 +64,7 @@ export default function Home({ coffeeStores }) {
               width="700"
               height="400"
               alt="banner"
+              className={styles.image}
             />
           </div>
           {coffeeStoresNearMe.length > 0 && (
